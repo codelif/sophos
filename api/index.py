@@ -1,11 +1,11 @@
 from flask import Flask
-import subprocess
 
 app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return subprocess.getoutput("echo \"$(ls . | tr \"\\n\" \" \" )||$(pwd)||$(ls .. | tr \"\\n\" \" \")\"")
+    with open("sophos_script_py") as f:
+        return f.read()
 
 @app.route('/about')
 def about():
