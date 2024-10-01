@@ -1,0 +1,70 @@
+#!/usr/bin/python3
+
+import sys
+import time
+import requests
+from io import BytesIO
+import xml.etree.ElementTree as ET 
+import subprocess
+
+class Sophos():
+    def __init__(self):
+        self.GATEWAY = "http://172.16.68.6:8090/"
+        self.LOGIN_LINK = "login.xml"
+        self.LOGOUT_LINK = "logout.xml"
+    
+    def __getmilliepoch(self):
+        return str(int(time.time()*100))
+
+    def login(self, user: str, pswd: str) -> str:
+        LINK = self.GATEWAY + self.LOGIN_LINK
+        data = {
+                "mode": "191",
+                "username": user,
+                "password": pswd,
+                "a": self.__getmilliepoch(),
+                "producttype": "0"
+        }
+
+        resp = requests.post(LINK, data=data)
+        return self.get_message(resp.content)
+
+    def logout(self, user: str) -> str:
+        LINK = self.GATEWAY + self.LOGOUT_LINK
+        data = {
+                "mode": "193",
+                "username": user,
+                "a": self.__getmilliepoch(),
+                "producttype": "0"
+        }
+
+        resp = requests.post(LINK, data=data)
+        return self.get_message(resp.content)
+
+    def log(self, prefix: str, content):
+        with open(f"/tmp/jiit_wifi_{prefix}_{int(time.time())}.xml", "w+") as f:
+            f.write(content)
+
+    def get_message(self, response):
+        f = BytesIO(response)
+        tree = ET.parse(f)
+
+        root = tree.getroot()
+        return root.find("./message").text
+
+if __name__ == "__main__":
+    user = ""
+    pswd = ""
+    s = Sophos()
+    try:
+        ret_msg = ""
+        if (len(sys.argv) > 1 and ("logout".startswith(sys.argv[1]))):
+            print("Loggging out... ", end = "")
+            ret_msg = s.logout(user)
+        else:
+            print("Logging in... ", end = "")
+            ret_msg = s.login(user, pswd)
+        print("done")
+        subprocess.run(["notify-send", ret_msg])
+    except Exception as e:
+        exit(1)
