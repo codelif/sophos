@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return subprocess.getoutput("""echo "$(ls . | tr "\n" " " )||$(pwd)||$(ls .. | tr "\n" " ")"""")
+    return subprocess.getoutput("echo \"$(ls . | tr \"\\n\" \" \" )||$(pwd)||$(ls .. | tr \"\\n\" \" \")\"")
 
 @app.route('/about')
 def about():
