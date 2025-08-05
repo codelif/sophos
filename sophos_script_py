@@ -2,6 +2,7 @@
 
 import sys
 import time
+import html
 import requests
 from io import BytesIO
 import xml.etree.ElementTree as ET 
@@ -27,7 +28,7 @@ class Sophos():
         }
 
         resp = requests.post(LINK, data=data)
-        return self.get_message(resp.content)
+        return self.get_message(resp.content).format(username=user)
 
     def logout(self, user: str) -> str:
         LINK = self.GATEWAY + self.LOGOUT_LINK
@@ -50,7 +51,7 @@ class Sophos():
         tree = ET.parse(f)
 
         root = tree.getroot()
-        return root.find("./message").text
+        return html.unescape(root.find("./message").text)
 
 if __name__ == "__main__":
     user = ""
